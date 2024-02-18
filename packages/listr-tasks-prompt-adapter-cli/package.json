@@ -1,6 +1,6 @@
 {
   "name": "@danielr18/listr-tasks-prompt-adapter-cli",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -20,7 +20,8 @@
     "./package.json": "./package.json"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
   },
   "engines": {
     "node": ">=18.0.0"

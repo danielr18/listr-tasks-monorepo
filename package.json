@@ -33,6 +33,7 @@
   },
   "devDependencies": {
     "@cenk1cenk2/eslint-config": "^2.7.39",
+    "@changesets/cli": "^2.27.1",
     "@jest/globals": "^29.7.0",
     "@swc/core": "^1.4.0",
     "@tsconfig/node18": "^18.2.2",
