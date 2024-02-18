@@ -19,6 +19,7 @@
     },
     "./package.json": "./package.json"
   },
+  "repository": "https://github.com/danielr18/listr-tasks-monorepo.git",
   "publishConfig": {
     "access": "public",
     "registry": "https://npm.pkg.github.com"
