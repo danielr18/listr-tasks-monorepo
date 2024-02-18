@@ -1,0 +1,1 @@
+export { loadSecretsTask } from './secrets'
