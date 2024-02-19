@@ -1,5 +1,11 @@
 # @danielr18/listr-tasks-prompt-adapter-interval
 
+## 0.0.2
+
+### Patch Changes
+
+- Added runner package
+
 ## 0.0.1
 
 ### Patch Changes
