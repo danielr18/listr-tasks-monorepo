@@ -107,19 +107,22 @@ export async function CliTaskRunner (config: TaskRunnerConfig): Promise<void> {
     if (presetChoices.length > 0) {
       const selectedParams = await select<unknown>({
         message: 'Select a preset to use',
-        choices: presetChoices
+        choices: [{ name: 'None', value: null }, ...presetChoices]
       })
 
-      const parsedParams = taskModuleInfo.params.safeParse(selectedParams)
+      if (selectedParams !== null) {
+        const parsedParams = taskModuleInfo.params.safeParse(selectedParams)
 
-      if (parsedParams.success === true) {
-        params = parsedParams.data
-      } else {
-        // eslint-disable-next-line no-console
-        console.warn('Invalid params', parsedParams.error.issues)
+        if (parsedParams.success === true) {
+          params = parsedParams.data
+        } else {
+          // eslint-disable-next-line no-console
+          console.warn('Invalid params', parsedParams.error.issues)
+        }
       }
     }
   }
 
   await taskModule.default({ ...params && { params } })
+  process.exit(0)
 }
