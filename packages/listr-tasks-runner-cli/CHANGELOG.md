@@ -1,5 +1,11 @@
 # @danielr18/listr-tasks-runner-cli
 
+## 0.0.4
+
+### Patch Changes
+
+- Added file and group prompts
+
 ## 0.0.3
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @danielr18/listr-tasks-secrets
 
+## 0.0.3
+
+### Patch Changes
+
+- Added file and group prompts
+
 ## 0.0.2
 
 ### Patch Changes
