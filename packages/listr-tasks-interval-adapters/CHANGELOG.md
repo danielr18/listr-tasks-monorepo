@@ -1,4 +1,4 @@
-# @danielr18/listr-tasks-prompt-adapter-cli
+# @danielr18/listr-tasks-interval-adapters
 
 ## 0.0.2
 

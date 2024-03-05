@@ -13,10 +13,13 @@ class IntervalLoggerStream extends WriteStream {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   public _write (chunk: any /* Replace 'any' with the actual type of chunk */, encoding: string, callback: () => void): void {
     // Call ctx.log with the provided chunk (message)
-    this.ctx.log(chunk.toString()).catch(() => {})
-
-    // Call the callback to indicate that the write operation is complete
-    callback()
+    this.ctx
+      .log(chunk.toString())
+      .then(() => {
+        // Call the callback to indicate that the write operation is complete
+        callback()
+      })
+      .catch(() => {})
   }
 }
 

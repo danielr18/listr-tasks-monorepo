@@ -5,7 +5,6 @@
     "moduleResolution": "Node",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "strictNullChecks": false,
     "paths": {}
   },
   "ts-node": {

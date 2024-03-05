@@ -75,7 +75,11 @@ export async function CliTaskRunner (config: TaskRunnerConfig): Promise<void> {
   })
 
   const taskModule = taskModules[selectedTaskIndex]
-  const taskModuleInfo = taskModule.getTaskInfo?.()
+
+  if (!taskModule) {
+    throw new Error('Invalid task module')
+  }
+  const taskModuleInfo = taskModule?.getTaskInfo?.()
   const taskModulePath = taskModulePaths[selectedTaskIndex]
 
   let params: unknown
@@ -123,6 +127,6 @@ export async function CliTaskRunner (config: TaskRunnerConfig): Promise<void> {
     }
   }
 
-  await taskModule.default({ ...params && { params } })
+  await taskModule.default?.({ params })
   process.exit(0)
 }

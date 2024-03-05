@@ -1,5 +1,5 @@
 {
-  "name": "@danielr18/listr-tasks-prompt-adapter-interval",
+  "name": "@danielr18/listr-tasks-cli-adapters",
   "version": "0.0.2",
   "license": "MIT",
   "type": "module",
@@ -46,15 +46,16 @@
     ]
   },
   "peerDependencies": {
+    "@inquirer/prompts": ">= 3 < 5",
     "listr2": "^8.0.0"
   },
   "devDependencies": {
     "@danielr18/listr-tasks-core": "workspace:*",
-    "@interval/sdk": "^2.0.0",
     "listr2": "^8.0.2"
   },
   "dependencies": {
-    "@inquirer/prompts": "^4.0.0",
-    "@inquirer/type": "^1.2.0"
+    "@inquirer/type": "^1.2.0",
+    "run-jxa": "^3.0.0",
+    "uti": "^8.4.0"
   }
 }
