@@ -50,6 +50,8 @@ export abstract class CommonListrPromptsAdapter<Ctx> extends ListrPromptAdapter 
       result = await this.promptMultiSelect(args, context)
     } else if (args.type === 'file') {
       result = await this.promptFile(args, context)
+    } else if (args.type === 'number') {
+      result = await this.promptNumber(args, context)
     } else {
       throw new Error('Unknown prompt type')
     }
@@ -79,6 +81,10 @@ export abstract class CommonListrPromptsAdapter<Ctx> extends ListrPromptAdapter 
     context: Ctx
   ): Promise<MaybeUndefined<CommonListrFilePromptReturn, Required>>
   public abstract promptGroup (args: CommonListrPromptGroupArgs, context: Ctx): Promise<unknown>
+  public abstract promptNumber<Required extends boolean = true>(
+    args: CommonListrNumberPromptArgs & { required?: Required },
+    context: Ctx
+  ): Promise<MaybeUndefined<CommonListrNumberPromptReturn, Required>>
 }
 
 export type CommonListrDatePromptArgs = {
@@ -148,5 +154,16 @@ export type CommonListrPrimitivePromptArgs =
   | CommonListrSingleSelectPromptArgs
   | CommonListrMultiSelectPromptArgs
   | CommonListrFilePromptArgs
+  | CommonListrNumberPromptArgs
 
 export type MaybeUndefined<T, Required extends boolean> = Required extends true ? T : T | undefined
+
+export type CommonListrNumberPromptArgs = {
+  type: 'number'
+  defaultValue?: number
+  min?: number
+  max?: number
+  decimals?: number
+} & BasePromptArgs
+
+export type CommonListrNumberPromptReturn = number

@@ -10,9 +10,11 @@ import type {
   CommonListrPromptGroupArgs,
   CommonListrFilePromptArgs,
   CommonListrFilePromptReturn,
-  MaybeUndefined
+  MaybeUndefined,
+  CommonListrNumberPromptArgs,
+  CommonListrNumberPromptReturn
 } from '@danielr18/listr-tasks-core'
-import { input, select, checkbox } from '@inquirer/prompts'
+import { input, select, checkbox, number } from '@inquirer/prompts'
 import fs from 'fs/promises'
 // @ts-expect-error - get-timezone-offset is not typed
 import getTimezoneOffset from 'get-timezone-offset'
@@ -314,6 +316,52 @@ export class CliPromptAdapter extends CommonListrPromptsAdapter<object> {
     } catch (e) {
       throw new Error(`Failed to open file "${filePath}"`, { cause: e })
     }
+  }
+
+  public async promptNumber<Required extends boolean = true>(
+    args: CommonListrNumberPromptArgs & { required?: Required }
+  ): Promise<MaybeUndefined<CommonListrNumberPromptReturn, Required>> {
+    const { required = true, ...promptArgs } = args
+    const inquirePrompt = number(
+      {
+        message: formatInputMessage(promptArgs),
+        default: promptArgs.defaultValue,
+        min: promptArgs.min,
+        max: promptArgs.max,
+        validate: (input) => {
+          if (!required && input === undefined) {
+            return true
+          }
+
+          if (input === undefined) {
+            return false
+          }
+
+          if (promptArgs.decimals !== undefined && input % 1 !== 0) {
+            const decimalPlaces = input.toString().split('.')[1]?.length || 0
+
+            if (decimalPlaces > promptArgs.decimals) {
+              return `Number can only have ${promptArgs.decimals} decimal places`
+            }
+          }
+
+          return true
+        },
+        required
+      },
+      {
+        output: this.wrapper.stdout(ListrTaskEventType.PROMPT)
+      }
+    )
+
+    this.inquirePrompt = inquirePrompt
+    const result = await inquirePrompt
+
+    if (result === undefined && !required) {
+      return undefined as MaybeUndefined<CommonListrNumberPromptReturn, Required>
+    }
+
+    return result as MaybeUndefined<CommonListrNumberPromptReturn, Required>
   }
 
   public cancel (): void {

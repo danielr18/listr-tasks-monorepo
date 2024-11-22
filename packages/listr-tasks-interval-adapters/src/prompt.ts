@@ -11,7 +11,9 @@ import type {
   CommonListrPrimitivePromptArgs,
   CommonListrFilePromptArgs,
   CommonListrFilePromptReturn,
-  MaybeUndefined
+  MaybeUndefined,
+  CommonListrNumberPromptArgs,
+  CommonListrNumberPromptReturn
 } from '@danielr18/listr-tasks-core'
 import { CommonListrPromptsAdapter } from '@danielr18/listr-tasks-core'
 import type { IO } from '@interval/sdk'
@@ -111,6 +113,16 @@ export class IntervalPromptAdapter extends CommonListrPromptsAdapter<IntervalPro
 
   public cancel (): void {}
 
+  public async promptNumber<Required extends boolean = true>(
+    args: CommonListrNumberPromptArgs & { required?: Required },
+    context: IntervalPromptAdapterCtx
+  ): Promise<MaybeUndefined<CommonListrNumberPromptReturn, Required>> {
+    const { required = true, ...promptArgs } = args
+    const result = await context.io.input.number(...this.numberPromptArgs(promptArgs)).optional(!required)
+
+    return result as MaybeUndefined<CommonListrNumberPromptReturn, Required>
+  }
+
   private textPromptArgs (args: CommonListrTextPromptArgs) {
     return [
       args.label,
@@ -166,6 +178,19 @@ export class IntervalPromptAdapter extends CommonListrPromptsAdapter<IntervalPro
     ] as const
   }
 
+  private numberPromptArgs (args: CommonListrNumberPromptArgs) {
+    return [
+      args.label,
+      {
+        defaultValue: args.defaultValue,
+        helpText: args.helpText,
+        min: args.min,
+        max: args.max,
+        decimals: args.decimals
+      }
+    ] as const
+  }
+
   private promptToIoPromise (args: CommonListrPrimitivePromptArgs, context: IntervalPromptAdapterCtx): MaybeOptionalGroupIOPromise {
     if (args.type === 'date') {
       const { required = true, ...promptArgs } = args
@@ -187,6 +212,10 @@ export class IntervalPromptAdapter extends CommonListrPromptsAdapter<IntervalPro
       const { required = true, ...promptArgs } = args
 
       return context.io.input.file(...this.filePromptArgs(promptArgs)).optional(!required)
+    } else if (args.type === 'number') {
+      const { required = true, ...promptArgs } = args
+
+      return context.io.input.number(...this.numberPromptArgs(promptArgs)).optional(!required)
     } else {
       throw new Error('Unknown prompt type')
     }
