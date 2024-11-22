@@ -1,5 +1,11 @@
 # @danielr18/listr-tasks-secrets
 
+## 0.0.4
+
+### Patch Changes
+
+- Added support for optional prompts and number prompt
+
 ## 0.0.3
 
 ### Patch Changes

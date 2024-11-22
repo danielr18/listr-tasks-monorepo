@@ -1,5 +1,11 @@
 # @danielr18/listr-tasks-runner-cli
 
+## 0.0.5
+
+### Patch Changes
+
+- Added support for optional prompts and number prompt
+
 ## 0.0.4
 
 ### Patch Changes
