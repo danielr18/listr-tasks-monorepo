@@ -4,6 +4,7 @@ import { ListrPromptAdapter, ListrTaskEventType, ListrTaskState } from 'listr2'
 interface BasePromptArgs {
   label: string
   helpText?: string
+  required?: boolean
 }
 
 export type CommonListrPromptsAdapterImpl<Ctx> = new (task: ListrTaskObject<any, any, any>, wrapper: ListrTaskWrapper<any, any, any>) => CommonListrPromptsAdapter<Ctx>
@@ -57,11 +58,26 @@ export abstract class CommonListrPromptsAdapter<Ctx> extends ListrPromptAdapter 
   }
 
   public abstract cancel (): void
-  public abstract promptDate (args: CommonListrDatePromptArgs, context: Ctx): Promise<CommonListrDatePromptReturn>
-  public abstract promptText (args: CommonListrTextPromptArgs, context: Ctx): Promise<CommonListrTextPrompReturn>
-  public abstract promptSingleSelect (args: CommonListrSingleSelectPromptArgs, context: Ctx): Promise<CommonListrSingleSelectPromptReturn>
-  public abstract promptMultiSelect (args: CommonListrMultiSelectPromptArgs, context: Ctx): Promise<CommonListrMultiSelectPromptReturn>
-  public abstract promptFile (args: CommonListrFilePromptArgs, context: Ctx): Promise<CommonListrFilePromptReturn>
+  public abstract promptDate<Required extends boolean = true>(
+    args: CommonListrDatePromptArgs & { required?: Required },
+    context: Ctx
+  ): Promise<MaybeUndefined<CommonListrDatePromptReturn, Required>>
+  public abstract promptText<Required extends boolean = true>(
+    args: CommonListrTextPromptArgs & { required?: Required },
+    context: Ctx
+  ): Promise<MaybeUndefined<CommonListrTextPrompReturn, Required>>
+  public abstract promptSingleSelect<Required extends boolean = true>(
+    args: CommonListrSingleSelectPromptArgs & { required?: Required },
+    context: Ctx
+  ): Promise<MaybeUndefined<CommonListrSingleSelectPromptReturn, Required>>
+  public abstract promptMultiSelect<Required extends boolean = true>(
+    args: CommonListrMultiSelectPromptArgs & { required?: Required },
+    context: Ctx
+  ): Promise<MaybeUndefined<CommonListrMultiSelectPromptReturn, Required>>
+  public abstract promptFile<Required extends boolean = true>(
+    args: CommonListrFilePromptArgs & { required?: Required },
+    context: Ctx
+  ): Promise<MaybeUndefined<CommonListrFilePromptReturn, Required>>
   public abstract promptGroup (args: CommonListrPromptGroupArgs, context: Ctx): Promise<unknown>
 }
 
@@ -132,3 +148,5 @@ export type CommonListrPrimitivePromptArgs =
   | CommonListrSingleSelectPromptArgs
   | CommonListrMultiSelectPromptArgs
   | CommonListrFilePromptArgs
+
+export type MaybeUndefined<T, Required extends boolean> = Required extends true ? T : T | undefined

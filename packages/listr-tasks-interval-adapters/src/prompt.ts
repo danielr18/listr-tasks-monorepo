@@ -10,7 +10,8 @@ import type {
   CommonListrPromptGroupArgs,
   CommonListrPrimitivePromptArgs,
   CommonListrFilePromptArgs,
-  CommonListrFilePromptReturn
+  CommonListrFilePromptReturn,
+  MaybeUndefined
 } from '@danielr18/listr-tasks-core'
 import { CommonListrPromptsAdapter } from '@danielr18/listr-tasks-core'
 import type { IO } from '@interval/sdk'
@@ -20,28 +21,56 @@ interface IntervalPromptAdapterCtx {
   io: IO
 }
 export class IntervalPromptAdapter extends CommonListrPromptsAdapter<IntervalPromptAdapterCtx> {
-  public async promptDate (args: CommonListrDatePromptArgs, context: IntervalPromptAdapterCtx): Promise<CommonListrDatePromptReturn> {
-    return context.io.input.date(...this.datePromptArgs(args))
+  public async promptDate<Required extends boolean = true>(
+    args: CommonListrDatePromptArgs & { required?: Required },
+    context: IntervalPromptAdapterCtx
+  ): Promise<MaybeUndefined<CommonListrDatePromptReturn, Required>> {
+    const { required = true, ...promptArgs } = args
+    const result = await context.io.input.date(...this.datePromptArgs(promptArgs)).optional(!required)
+
+    return result as MaybeUndefined<CommonListrDatePromptReturn, Required>
   }
 
-  public async promptText (args: CommonListrTextPromptArgs, context: IntervalPromptAdapterCtx): Promise<string> {
-    return context.io.input.text(...this.textPromptArgs(args))
+  public async promptText<Required extends boolean = true>(
+    args: CommonListrTextPromptArgs & { required?: Required },
+    context: IntervalPromptAdapterCtx
+  ): Promise<MaybeUndefined<string, Required>> {
+    const { required = true, ...promptArgs } = args
+    const result = await context.io.input.text(...this.textPromptArgs(promptArgs)).optional(!required)
+
+    return result as MaybeUndefined<string, Required>
   }
 
-  public async promptSingleSelect (args: CommonListrSingleSelectPromptArgs, context: IntervalPromptAdapterCtx): Promise<CommonListrSingleSelectPromptReturn> {
-    const { value } = await context.io.select.single(...this.singleSelectPromptArgs(args))
+  public async promptSingleSelect<Required extends boolean = true>(
+    args: CommonListrSingleSelectPromptArgs & { required?: Required },
+    context: IntervalPromptAdapterCtx
+  ): Promise<MaybeUndefined<CommonListrSingleSelectPromptReturn, Required>> {
+    const { required = true, ...promptArgs } = args
+    const result = await context.io.select.single(...this.singleSelectPromptArgs(promptArgs)).optional(!required)
 
-    return value
+    return result?.value as MaybeUndefined<CommonListrSingleSelectPromptReturn, Required>
   }
 
-  public async promptMultiSelect (args: CommonListrMultiSelectPromptArgs, context: IntervalPromptAdapterCtx): Promise<CommonListrMultiSelectPromptReturn> {
-    const selectedOptions = await context.io.select.multiple(...this.multiSelectPromptArgs(args))
+  public async promptMultiSelect<Required extends boolean = true>(
+    args: CommonListrMultiSelectPromptArgs & { required?: Required },
+    context: IntervalPromptAdapterCtx
+  ): Promise<MaybeUndefined<CommonListrMultiSelectPromptReturn, Required>> {
+    const { required = true, ...promptArgs } = args
+    const selectedOptions = await context.io.select.multiple(...this.multiSelectPromptArgs(promptArgs)).optional(!required)
 
-    return selectedOptions.map((option) => option.value)
+    return selectedOptions?.map((option) => option.value) as MaybeUndefined<CommonListrMultiSelectPromptReturn, Required>
   }
 
-  public async promptFile (args: CommonListrFilePromptArgs, context: IntervalPromptAdapterCtx): Promise<CommonListrFilePromptReturn> {
-    const file = await context.io.input.file(...this.filePromptArgs(args))
+  public async promptFile<Required extends boolean = true>(
+    args: CommonListrFilePromptArgs & { required?: Required },
+    context: IntervalPromptAdapterCtx
+  ): Promise<MaybeUndefined<CommonListrFilePromptReturn, Required>> {
+    const { required = true, ...promptArgs } = args
+    const file = await context.io.input.file(...this.filePromptArgs(promptArgs)).optional(!required)
+
+    if (!file) {
+      return undefined as MaybeUndefined<CommonListrFilePromptReturn, Required>
+    }
 
     return {
       name: file.name,
@@ -50,7 +79,7 @@ export class IntervalPromptAdapter extends CommonListrPromptsAdapter<IntervalPro
       text: file.text.bind(file),
       buffer: file.buffer.bind(file),
       url: file.url.bind(file)
-    }
+    } as MaybeUndefined<CommonListrFilePromptReturn, Required>
   }
 
   public async promptGroup (args: CommonListrPromptGroupArgs, context: IntervalPromptAdapterCtx) {
@@ -139,21 +168,35 @@ export class IntervalPromptAdapter extends CommonListrPromptsAdapter<IntervalPro
 
   private promptToIoPromise (args: CommonListrPrimitivePromptArgs, context: IntervalPromptAdapterCtx): MaybeOptionalGroupIOPromise {
     if (args.type === 'date') {
-      return context.io.input.date(...this.datePromptArgs(args))
+      const { required = true, ...promptArgs } = args
+
+      return context.io.input.date(...this.datePromptArgs(promptArgs)).optional(!required)
     } else if (args.type === 'text') {
-      return context.io.input.text(...this.textPromptArgs(args))
+      const { required = true, ...promptArgs } = args
+
+      return context.io.input.text(...this.textPromptArgs(promptArgs)).optional(!required)
     } else if (args.type === 'singleSelect') {
-      return context.io.select.single(...this.singleSelectPromptArgs(args))
+      const { required = true, ...promptArgs } = args
+
+      return context.io.select.single(...this.singleSelectPromptArgs(promptArgs)).optional(!required)
     } else if (args.type === 'multiSelect') {
-      return context.io.select.multiple(...this.multiSelectPromptArgs(args))
+      const { required = true, ...promptArgs } = args
+
+      return context.io.select.multiple(...this.multiSelectPromptArgs(promptArgs)).optional(!required)
     } else if (args.type === 'file') {
-      return context.io.input.file(...this.filePromptArgs(args))
+      const { required = true, ...promptArgs } = args
+
+      return context.io.input.file(...this.filePromptArgs(promptArgs)).optional(!required)
     } else {
       throw new Error('Unknown prompt type')
     }
   }
 
   private transformOutput (option: CommonListrPrimitivePromptArgs, result: unknown, context: IntervalPromptAdapterCtx) {
+    if (!option.required && result === undefined) {
+      return undefined
+    }
+
     if (option.type === 'multiSelect') {
       if (Array.isArray(result)) {
         return result.map((option) => option.value)

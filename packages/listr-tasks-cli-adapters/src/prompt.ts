@@ -9,16 +9,20 @@ import type {
   CommonListrTextPromptArgs,
   CommonListrPromptGroupArgs,
   CommonListrFilePromptArgs,
-  CommonListrFilePromptReturn
+  CommonListrFilePromptReturn,
+  MaybeUndefined
 } from '@danielr18/listr-tasks-core'
 import { input, select, checkbox } from '@inquirer/prompts'
-import type { CancelablePromise } from '@inquirer/type'
 import fs from 'fs/promises'
 // @ts-expect-error - get-timezone-offset is not typed
 import getTimezoneOffset from 'get-timezone-offset'
 import { ListrTaskEventType } from 'listr2'
 import path from 'path'
 import { UTIController } from 'uti'
+
+type CancelablePromise<T> = {
+  cancel: () => void
+} & Promise<T>
 
 function transformDate (dateOrStr: string | Date): string {
   let date: Date
@@ -68,16 +72,26 @@ function formatGroupInputMessage (groupLabel: string | undefined, { helpText, la
 export class CliPromptAdapter extends CommonListrPromptsAdapter<object> {
   private inquirePrompt: CancelablePromise<any> | undefined
 
-  public async promptDate (args: CommonListrDatePromptArgs): Promise<CommonListrDatePromptReturn> {
+  public async promptDate<Required extends boolean = true>(
+    args: CommonListrDatePromptArgs & { required?: Required }
+  ): Promise<MaybeUndefined<CommonListrDatePromptReturn, Required>> {
+    const { required = true, ...promptArgs } = args
     const inquirePrompt = input(
       {
-        message: formatInputMessage(args),
-        default: args.defaultValue
-          ? args.defaultValue instanceof Date
-            ? transformDate(args.defaultValue)
-            : [args.defaultValue.year, args.defaultValue.month, args.defaultValue.day].map((n) => n.toString().padStart(2, '0')).join('-')
+        message: formatInputMessage(promptArgs),
+        default: promptArgs.defaultValue
+          ? promptArgs.defaultValue instanceof Date
+            ? transformDate(promptArgs.defaultValue)
+            : [promptArgs.defaultValue.year, promptArgs.defaultValue.month, promptArgs.defaultValue.day].map((n) => n.toString().padStart(2, '0')).join('-')
           : undefined,
-        validate: isDateValid
+        validate: (input) => {
+          if (!required && input === undefined) {
+            return true
+          }
+
+          return isDateValid(input)
+        },
+        required
       },
       {
         output: this.wrapper.stdout(ListrTaskEventType.PROMPT)
@@ -86,6 +100,11 @@ export class CliPromptAdapter extends CommonListrPromptsAdapter<object> {
 
     this.inquirePrompt = inquirePrompt
     const result = await inquirePrompt
+
+    if (result === undefined && !required) {
+      return undefined as MaybeUndefined<CommonListrDatePromptReturn, Required>
+    }
+
     const date = new Date(result)
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
     const timezoneOffset = getTimezoneOffset(timezone, date)
@@ -100,11 +119,20 @@ export class CliPromptAdapter extends CommonListrPromptsAdapter<object> {
     }
   }
 
-  public async promptText (args: CommonListrTextPromptArgs): Promise<string> {
+  public async promptText<Required extends boolean = true>(args: CommonListrTextPromptArgs & { required?: Required }): Promise<MaybeUndefined<string, Required>> {
+    const { required = true, ...promptArgs } = args
     const inquirePrompt = input(
       {
-        message: formatInputMessage(args),
-        default: args.defaultValue
+        message: formatInputMessage(promptArgs),
+        default: promptArgs.defaultValue,
+        validate: (input) => {
+          if (!required && input === undefined) {
+            return true
+          }
+
+          return !!input
+        },
+        required
       },
       {
         output: this.wrapper.stdout(ListrTaskEventType.PROMPT)
@@ -114,18 +142,26 @@ export class CliPromptAdapter extends CommonListrPromptsAdapter<object> {
     this.inquirePrompt = inquirePrompt
     const result = await inquirePrompt
 
+    if (result === undefined && !required) {
+      return undefined as MaybeUndefined<string, Required>
+    }
+
     return result
   }
 
-  public async promptSingleSelect (args: CommonListrSingleSelectPromptArgs): Promise<CommonListrSingleSelectPromptReturn> {
+  public async promptSingleSelect<Required extends boolean = true>(
+    args: CommonListrSingleSelectPromptArgs & { required?: Required }
+  ): Promise<MaybeUndefined<CommonListrSingleSelectPromptReturn, Required>> {
+    const { required = true, ...promptArgs } = args
+
     const inquirePrompt = select(
       {
-        message: formatInputMessage(args),
-        choices: args.options.map((option) => ({
+        message: formatInputMessage(promptArgs),
+        choices: [...required ? [] : [{ label: 'Skip', value: undefined }], ...promptArgs.options].map((option) => ({
           name: option.label,
           value: option.value
         })),
-        default: args.defaultValue
+        default: promptArgs.defaultValue
       },
       {
         output: this.wrapper.stdout(ListrTaskEventType.PROMPT)
@@ -135,19 +171,29 @@ export class CliPromptAdapter extends CommonListrPromptsAdapter<object> {
     this.inquirePrompt = inquirePrompt
     const result = await inquirePrompt
 
-    return result
+    return result as MaybeUndefined<CommonListrSingleSelectPromptReturn, Required>
   }
 
-  public async promptMultiSelect (args: CommonListrMultiSelectPromptArgs): Promise<CommonListrMultiSelectPromptReturn> {
-    const { defaultValue } = args
+  public async promptMultiSelect<Required extends boolean = true>(
+    args: CommonListrMultiSelectPromptArgs & { required?: Required }
+  ): Promise<MaybeUndefined<CommonListrMultiSelectPromptReturn, Required>> {
+    const { required = true, defaultValue, ...promptArgs } = args
     const inquirePrompt = checkbox(
       {
-        message: formatInputMessage(args),
-        choices: args.options.map((option) => ({
+        message: formatInputMessage(promptArgs),
+        choices: promptArgs.options.map((option) => ({
           name: option.label,
           value: option.value,
           checked: defaultValue ? defaultValue.includes(option.value) : false
-        }))
+        })),
+        validate: (input) => {
+          if (!required && input.length === 0) {
+            return true
+          }
+
+          return input.length > 0
+        },
+        required
       },
       {
         output: this.wrapper.stdout(ListrTaskEventType.PROMPT)
@@ -157,7 +203,11 @@ export class CliPromptAdapter extends CommonListrPromptsAdapter<object> {
     this.inquirePrompt = inquirePrompt
     const result = await inquirePrompt
 
-    return result
+    if (!result.length && !required) {
+      return undefined as MaybeUndefined<CommonListrMultiSelectPromptReturn, Required>
+    }
+
+    return result as MaybeUndefined<CommonListrMultiSelectPromptReturn, Required>
   }
 
   public async promptGroup (args: CommonListrPromptGroupArgs, context: object): Promise<unknown> {
@@ -194,29 +244,33 @@ export class CliPromptAdapter extends CommonListrPromptsAdapter<object> {
     return result
   }
 
-  public async promptFile (args: CommonListrFilePromptArgs): Promise<CommonListrFilePromptReturn> {
+  public async promptFile<Required extends boolean = true>(
+    args: CommonListrFilePromptArgs & { required?: Required }
+  ): Promise<MaybeUndefined<CommonListrFilePromptReturn, Required>> {
+    const { required = true, ...promptArgs } = args
     const pickOption = await this.promptSingleSelect({
       type: 'singleSelect',
-      label: `Choose how to pick the file\n${args.label}`,
-      options: [
-        { label: 'Path', value: 'path' },
-        { label: 'Dialog (Supported in MacOS)', value: 'dialog' }
-      ]
+      label: `Choose how to pick the file\n${promptArgs.label}`,
+      options: [{ label: 'Path', value: 'path' }, { label: 'Dialog (Supported in MacOS)', value: 'dialog' }, ...required ? [] : [{ label: 'Skip', value: 'skip' }]]
     })
+
+    if (pickOption === 'skip') {
+      return undefined as MaybeUndefined<CommonListrFilePromptReturn, Required>
+    }
 
     let filePath: string
 
     if (pickOption === 'path') {
       filePath = await this.promptText({
         type: 'text',
-        label: `${args.label} (Enter Path)`,
-        helpText: args.helpText
+        label: `${promptArgs.label} (Enter Path)`,
+        helpText: promptArgs.helpText
       })
     } else {
       // eslint-disable-next-line import/no-extraneous-dependencies
       const { runJxa } = await import('run-jxa')
       const uc = new UTIController()
-      const ofType = (args.allowedExtensions ?? []).flatMap((ext) => {
+      const ofType = (promptArgs.allowedExtensions ?? []).flatMap((ext) => {
         const utis = uc.getUTIsForFileName(`file.${ext}`)
 
         return utis.length > 0 ? utis : ext
@@ -232,7 +286,7 @@ export class CliPromptAdapter extends CommonListrPromptsAdapter<object> {
         });
         return path.toString();
       `,
-        [args.label, ofType]
+        [promptArgs.label, ofType]
       )
     }
 
