@@ -49,6 +49,6 @@
     "listr2": "^8.0.0"
   },
   "devDependencies": {
-    "listr2": "^8.0.2"
+    "listr2": "^10.1.0"
   }
 }

@@ -26,7 +26,7 @@ type CancelablePromise<T> = {
   cancel: () => void
 } & Promise<T>
 
-function transformDate (dateOrStr: string | Date): string {
+function transformDate(dateOrStr: string | Date): string {
   let date: Date
   let dateStr: string
 
@@ -53,15 +53,15 @@ function transformDate (dateOrStr: string | Date): string {
   return `${year}-${month}-${day}`
 }
 
-function isDateValid (dateStr: string): boolean {
+function isDateValid(dateStr: string): boolean {
   return !Number.isNaN(new Date(dateStr).valueOf())
 }
 
-function formatInputMessage ({ label, helpText }: { label: string, helpText?: string }): string {
+function formatInputMessage({ label, helpText }: { label: string; helpText?: string }): string {
   return helpText ? `${helpText}\n${label}` : label
 }
 
-function formatGroupInputMessage (groupLabel: string | undefined, { helpText, label: inputLabel }: { helpText?: string, label: string }): { helpText?: string, label: string } {
+function formatGroupInputMessage(groupLabel: string | undefined, { helpText, label: inputLabel }: { helpText?: string; label: string }): { helpText?: string; label: string } {
   if (helpText) {
     if (groupLabel) {
       return { helpText: undefined, label: `${groupLabel}\n${helpText}\n${inputLabel}` }
@@ -159,7 +159,7 @@ export class CliPromptAdapter extends CommonListrPromptsAdapter<object> {
     const inquirePrompt = select(
       {
         message: formatInputMessage(promptArgs),
-        choices: [...required ? [] : [{ label: 'Skip', value: undefined }], ...promptArgs.options].map((option) => ({
+        choices: [...(required ? [] : [{ label: 'Skip', value: undefined }]), ...promptArgs.options].map((option) => ({
           name: option.label,
           value: option.value
         })),
@@ -212,7 +212,7 @@ export class CliPromptAdapter extends CommonListrPromptsAdapter<object> {
     return result as MaybeUndefined<CommonListrMultiSelectPromptReturn, Required>
   }
 
-  public async promptGroup (args: CommonListrPromptGroupArgs, context: object): Promise<unknown> {
+  public async promptGroup(args: CommonListrPromptGroupArgs, context: object): Promise<unknown> {
     let result: any
 
     if (Array.isArray(args.options)) {
@@ -253,7 +253,7 @@ export class CliPromptAdapter extends CommonListrPromptsAdapter<object> {
     const pickOption = await this.promptSingleSelect({
       type: 'singleSelect',
       label: `Choose how to pick the file\n${promptArgs.label}`,
-      options: [{ label: 'Path', value: 'path' }, { label: 'Dialog (Supported in MacOS)', value: 'dialog' }, ...required ? [] : [{ label: 'Skip', value: 'skip' }]]
+      options: [{ label: 'Path', value: 'path' }, { label: 'Dialog (Supported in MacOS)', value: 'dialog' }, ...(required ? [] : [{ label: 'Skip', value: 'skip' }])]
     })
 
     if (pickOption === 'skip') {
@@ -269,7 +269,6 @@ export class CliPromptAdapter extends CommonListrPromptsAdapter<object> {
         helpText: promptArgs.helpText
       })
     } else {
-      // eslint-disable-next-line import/no-extraneous-dependencies
       const { runJxa } = await import('run-jxa')
       const uc = new UTIController()
       const ofType = (promptArgs.allowedExtensions ?? []).flatMap((ext) => {
@@ -302,18 +301,18 @@ export class CliPromptAdapter extends CommonListrPromptsAdapter<object> {
       return {
         name: path.basename(filePath),
         extension: path.extname(filePath),
-        json: async (): Promise<Record<string, unknown>> => {
+        json: async(): Promise<Record<string, unknown>> => {
           return JSON.parse(await fs.readFile(filePath, 'utf-8'))
         },
-        text: async (): Promise<string> => {
+        text: async(): Promise<string> => {
           return fs.readFile(filePath, 'utf-8')
         },
-        buffer: async (): Promise<Buffer> => {
+        buffer: async(): Promise<Buffer> => {
           return fs.readFile(filePath)
         },
-        url: async (): Promise<string> => filePath
+        url: async(): Promise<string> => filePath
       }
-    } catch (e) {
+    } catch(e) {
       throw new Error(`Failed to open file "${filePath}"`, { cause: e })
     }
   }
@@ -364,7 +363,7 @@ export class CliPromptAdapter extends CommonListrPromptsAdapter<object> {
     return result as MaybeUndefined<CommonListrNumberPromptReturn, Required>
   }
 
-  public cancel (): void {
+  public cancel(): void {
     if (!this.inquirePrompt) {
       return
     }

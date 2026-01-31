@@ -51,10 +51,10 @@
   "devDependencies": {
     "@danielr18/listr-tasks-core": "workspace:*",
     "@interval/sdk": "^2.0.0",
-    "listr2": "^8.0.2"
+    "listr2": "^10.1.0"
   },
   "dependencies": {
-    "@inquirer/prompts": "^4.0.0",
-    "@inquirer/type": "^1.2.0"
+    "@inquirer/prompts": "^8.2.0",
+    "@inquirer/type": "^4.0.3"
   }
 }

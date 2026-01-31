@@ -51,11 +51,12 @@
   },
   "devDependencies": {
     "@danielr18/listr-tasks-core": "workspace:*",
-    "listr2": "^8.0.2"
+    "@inquirer/prompts": "^7.1.0",
+    "listr2": "^10.1.0"
   },
   "dependencies": {
-    "@inquirer/type": "^3.0.1",
-    "run-jxa": "^3.0.0",
-    "uti": "^8.4.0"
+    "@inquirer/type": "^4.0.3",
+    "run-jxa": "^4.0.0",
+    "uti": "^8.10.5"
   }
 }

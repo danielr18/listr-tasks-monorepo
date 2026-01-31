@@ -3,7 +3,7 @@ import { select } from '@inquirer/prompts'
 import { Glob } from 'glob'
 import path from 'path'
 
-function isDefined<T> (argument: T | undefined): argument is T {
+function isDefined<T>(argument: T | undefined): argument is T {
   return argument !== undefined
 }
 
@@ -11,7 +11,7 @@ export interface TaskRunnerConfig {
   tasksPattern: string
   presetsPattern?: string
 }
-export async function CliTaskRunner (config: TaskRunnerConfig): Promise<void> {
+export async function CliTaskRunner(config: TaskRunnerConfig): Promise<void> {
   const taskModulePaths: string[] = []
   const presetModulePaths: string[] = []
 
@@ -30,8 +30,8 @@ export async function CliTaskRunner (config: TaskRunnerConfig): Promise<void> {
   }
 
   const taskModules = await Promise.all(
-    taskModulePaths.map(async (taskModulePath) => {
-      const module = (await import(path.resolve('.', taskModulePath))) as { default?: (args: TaskRunArgs<TaskInfo>) => Promise<void>, getTaskInfo?: () => TaskInfo }
+    taskModulePaths.map(async(taskModulePath) => {
+      const module = (await import(path.resolve('.', taskModulePath))) as { default?: (args: TaskRunArgs<TaskInfo>) => Promise<void>; getTaskInfo?: () => TaskInfo }
 
       if (!module.default) {
         return null
@@ -42,8 +42,8 @@ export async function CliTaskRunner (config: TaskRunnerConfig): Promise<void> {
   )
 
   const presetModules = await Promise.all(
-    presetModulePaths.map(async (presetModulePath) => {
-      const module = (await import(path.resolve('.', presetModulePath))) as { taskPath?: string, getTaskParams?: () => unknown, getPresetInfo?: () => TaskPresetInfo }
+    presetModulePaths.map(async(presetModulePath) => {
+      const module = (await import(path.resolve('.', presetModulePath))) as { taskPath?: string; getTaskParams?: () => unknown; getPresetInfo?: () => TaskPresetInfo }
 
       return module
     })
@@ -95,7 +95,7 @@ export async function CliTaskRunner (config: TaskRunnerConfig): Promise<void> {
 
     const presetChoices = (
       await Promise.all(
-        taskPresetModules.map(async (presetModule) => {
+        taskPresetModules.map(async(presetModule) => {
           if (!presetModule?.getTaskParams || !presetModule?.getPresetInfo) {
             return undefined
           }

@@ -1,2 +1,2 @@
 export * from './prompt-adapter'
-export * from './runner'
+export type * from './runner'

@@ -84,7 +84,7 @@ export class IntervalPromptAdapter extends CommonListrPromptsAdapter<IntervalPro
     } as MaybeUndefined<CommonListrFilePromptReturn, Required>
   }
 
-  public async promptGroup (args: CommonListrPromptGroupArgs, context: IntervalPromptAdapterCtx) {
+  public async promptGroup(args: CommonListrPromptGroupArgs, context: IntervalPromptAdapterCtx) {
     const options = args.options
     let groupResult: unknown[] | Record<string, unknown>
 
@@ -92,7 +92,7 @@ export class IntervalPromptAdapter extends CommonListrPromptsAdapter<IntervalPro
       groupResult = await context.io.group(options.map((option) => this.promptToIoPromise(option, context)))
 
       for (let i = 0; i < options.length; i++) {
-        groupResult[i] = this.transformOutput(options[i], groupResult[i], context)
+        groupResult[i] = this.transformOutput(options[i], groupResult[i])
       }
     } else {
       groupResult = await context.io.group(
@@ -104,14 +104,14 @@ export class IntervalPromptAdapter extends CommonListrPromptsAdapter<IntervalPro
       )
 
       for (const [key, value] of Object.entries(options)) {
-        groupResult[key] = this.transformOutput(value, groupResult[key], context)
+        groupResult[key] = this.transformOutput(value, groupResult[key])
       }
     }
 
     return groupResult
   }
 
-  public cancel (): void {}
+  public cancel(): void {}
 
   public async promptNumber<Required extends boolean = true>(
     args: CommonListrNumberPromptArgs & { required?: Required },
@@ -123,7 +123,7 @@ export class IntervalPromptAdapter extends CommonListrPromptsAdapter<IntervalPro
     return result as MaybeUndefined<CommonListrNumberPromptReturn, Required>
   }
 
-  private textPromptArgs (args: CommonListrTextPromptArgs) {
+  private textPromptArgs(args: CommonListrTextPromptArgs) {
     return [
       args.label,
       {
@@ -133,7 +133,7 @@ export class IntervalPromptAdapter extends CommonListrPromptsAdapter<IntervalPro
     ] as const
   }
 
-  private datePromptArgs (args: CommonListrDatePromptArgs) {
+  private datePromptArgs(args: CommonListrDatePromptArgs) {
     return [
       args.label,
       {
@@ -143,7 +143,7 @@ export class IntervalPromptAdapter extends CommonListrPromptsAdapter<IntervalPro
     ] as const
   }
 
-  private filePromptArgs (args: CommonListrFilePromptArgs) {
+  private filePromptArgs(args: CommonListrFilePromptArgs) {
     return [
       args.label,
       {
@@ -152,7 +152,7 @@ export class IntervalPromptAdapter extends CommonListrPromptsAdapter<IntervalPro
     ] as const
   }
 
-  private multiSelectPromptArgs (args: CommonListrMultiSelectPromptArgs) {
+  private multiSelectPromptArgs(args: CommonListrMultiSelectPromptArgs) {
     const { defaultValue } = args
 
     return [
@@ -165,7 +165,7 @@ export class IntervalPromptAdapter extends CommonListrPromptsAdapter<IntervalPro
     ] as const
   }
 
-  private singleSelectPromptArgs (args: CommonListrSingleSelectPromptArgs) {
+  private singleSelectPromptArgs(args: CommonListrSingleSelectPromptArgs) {
     const { defaultValue } = args
 
     return [
@@ -178,7 +178,7 @@ export class IntervalPromptAdapter extends CommonListrPromptsAdapter<IntervalPro
     ] as const
   }
 
-  private numberPromptArgs (args: CommonListrNumberPromptArgs) {
+  private numberPromptArgs(args: CommonListrNumberPromptArgs) {
     return [
       args.label,
       {
@@ -191,7 +191,7 @@ export class IntervalPromptAdapter extends CommonListrPromptsAdapter<IntervalPro
     ] as const
   }
 
-  private promptToIoPromise (args: CommonListrPrimitivePromptArgs, context: IntervalPromptAdapterCtx): MaybeOptionalGroupIOPromise {
+  private promptToIoPromise(args: CommonListrPrimitivePromptArgs, context: IntervalPromptAdapterCtx): MaybeOptionalGroupIOPromise {
     if (args.type === 'date') {
       const { required = true, ...promptArgs } = args
 
@@ -221,7 +221,7 @@ export class IntervalPromptAdapter extends CommonListrPromptsAdapter<IntervalPro
     }
   }
 
-  private transformOutput (option: CommonListrPrimitivePromptArgs, result: unknown, context: IntervalPromptAdapterCtx) {
+  private transformOutput(option: CommonListrPrimitivePromptArgs, result: unknown) {
     if (!option.required && result === undefined) {
       return undefined
     }
@@ -240,7 +240,7 @@ export class IntervalPromptAdapter extends CommonListrPromptsAdapter<IntervalPro
       }
     } else if (option.type === 'file') {
       if (typeof result === 'object' && result !== null) {
-        const unsafeFile = result as Awaited<ReturnType<typeof context.io.input.file>>
+        const unsafeFile = result as Awaited<ReturnType<IO['input']['file']>>
 
         return {
           name: unsafeFile.name,

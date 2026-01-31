@@ -28,7 +28,7 @@ export abstract class CommonListrPromptsAdapter<Ctx> extends ListrPromptAdapter 
         result = await this.handlePrompt(args, context)
       }
       this.reportCompleted()
-    } catch (e) {
+    } catch(e) {
       this.reportFailed()
 
       throw e
@@ -59,7 +59,7 @@ export abstract class CommonListrPromptsAdapter<Ctx> extends ListrPromptAdapter 
     return result
   }
 
-  public abstract cancel (): void
+  public abstract cancel(): void
   public abstract promptDate<Required extends boolean = true>(
     args: CommonListrDatePromptArgs & { required?: Required },
     context: Ctx
@@ -80,7 +80,7 @@ export abstract class CommonListrPromptsAdapter<Ctx> extends ListrPromptAdapter 
     args: CommonListrFilePromptArgs & { required?: Required },
     context: Ctx
   ): Promise<MaybeUndefined<CommonListrFilePromptReturn, Required>>
-  public abstract promptGroup (args: CommonListrPromptGroupArgs, context: Ctx): Promise<unknown>
+  public abstract promptGroup(args: CommonListrPromptGroupArgs, context: Ctx): Promise<unknown>
   public abstract promptNumber<Required extends boolean = true>(
     args: CommonListrNumberPromptArgs & { required?: Required },
     context: Ctx
@@ -90,12 +90,12 @@ export abstract class CommonListrPromptsAdapter<Ctx> extends ListrPromptAdapter 
 export type CommonListrDatePromptArgs = {
   type: 'date'
   defaultValue?:
-  | Date
-  | {
-    year: number
-    month: number
-    day: number
-  }
+    | Date
+    | {
+      year: number
+      month: number
+      day: number
+    }
 } & BasePromptArgs
 
 export interface CommonListrDatePromptReturn {
@@ -117,7 +117,7 @@ export type CommonListrSingleSelectPromptReturn = string | number | boolean
 export type CommonListrSingleSelectPromptArgs = {
   type: 'singleSelect'
   defaultValue?: CommonListrSingleSelectPromptReturn
-  options: { label: string, value: CommonListrSingleSelectPromptReturn }[]
+  options: { label: string; value: CommonListrSingleSelectPromptReturn }[]
 } & BasePromptArgs
 
 export type CommonListrMultiSelectPromptReturn = (string | number | boolean)[]
@@ -125,7 +125,7 @@ export type CommonListrMultiSelectPromptReturn = (string | number | boolean)[]
 export type CommonListrMultiSelectPromptArgs = {
   type: 'multiSelect'
   defaultValue?: CommonListrMultiSelectPromptReturn
-  options: { label: string, value: CommonListrMultiSelectPromptReturn[number] }[]
+  options: { label: string; value: CommonListrMultiSelectPromptReturn[number] }[]
 } & BasePromptArgs
 
 export interface CommonListrFilePromptReturn {
