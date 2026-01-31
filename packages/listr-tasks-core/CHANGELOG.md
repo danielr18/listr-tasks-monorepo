@@ -1,5 +1,11 @@
 # @danielr18/listr-tasks-core
 
+## 0.1.1
+
+### Patch Changes
+
+- Update listr2 peer dependency to support versions >= 8.0.0
+
 ## 0.1.0
 
 ### Minor Changes
